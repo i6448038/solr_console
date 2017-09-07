@@ -1,7 +1,7 @@
 package main
 
 import (
-	"os"
+	//"os"
 	"github.com/urfave/cli"
 	"fmt"
 	"net/http"
@@ -9,14 +9,17 @@ import (
 	"encoding/json"
 	"github.com/fatih/color"
 	"solr_console/utils"
+	"os"
 )
 
 var app *cli.App
+
 
 func init(){
 	app = cli.NewApp()
 	app.Name = "solr_console"
 	app.Usage = "This is a solr console management tool"
+	//initActions()
 	initFlags()
 	initCommands()
 }
@@ -24,42 +27,45 @@ func init(){
 
 
 func main() {
-	app.Run(os.Args)
+	args := os.Args
+	app.Run(args)
+	for true {
+		str := ""
+		fmt.Printf("%s", flag)
+		fmt.Scanf("%s", &str)
+		if str == "exit" {
+			break
+		}else {
+			args = append(args, str)
+			app.Run(args)
+		}
+	}
 
 }
 
+const flag = "golang>"
 
-//func initAppFlags(){
-//	app.Flags = []cli.Flag{
-//		cli.StringFlag{
-//			Name: "config, c",
-//		    Usage: "Load solr configuration from `FILE`",
-//		},
-//	}
-//}
-//
-//func initActions(){
-//	app.Action = func(c * cli.Context) error {
-//		color.Yellow("welcome to the solr management platform!")
-//
-//		version, err := getSolrVersion("lucene")
-//
-//		if err != nil {
-//			color.Red("出现了错误！" + err.Error())
-//			return err
-//		}
-//
-//		if v, ok := version.(string); ok{
-//			version = v
-//			color.Yellow("当前Solr的版本为:" + v)
-//		}
-//
-//
-//
-//		return nil
-//	}
-//}
+func initActions(){
+	app.Action = func(c * cli.Context) error {
+		color.Yellow("welcome to the solr management platform!")
 
+		version, err := getSolrVersion()
+
+		if err != nil {
+			color.Red("出现了错误！" + err.Error())
+			return err
+		}
+
+		color.Yellow("the version is:" + version)
+
+		color.Yellow("if you need any help，please type --help")
+
+
+		return nil
+	}
+}
+
+//初始化
 func initCommands(){
 	app.Commands = []cli.Command{
 		{
@@ -107,6 +113,16 @@ func initCommands(){
 				return nil
 			},
 		},
+		{
+			Name: "test",
+			Usage: "test",
+			Aliases: []string{"t"},
+			Description: "the d of the `CURD`,delete documents",
+			Action: func (c *cli.Context)error {
+				color.Red("success")
+				return nil
+			},
+		},
 	}
 }
 
@@ -123,7 +139,7 @@ func initFlags(){
 }
 
 
-func getSolrVersion(key string)(version interface{}, err error) {
+func getSolrVersion()(version string, err error) {
 	host := "localhost"
 	port := "8983"
 	resp, err := http.Get("http://"+host +":"+ port + "/solr/admin/info/system?wt=json")
@@ -132,18 +148,20 @@ func getSolrVersion(key string)(version interface{}, err error) {
 	}
 	body, errBody := ioutil.ReadAll(resp.Body)
 	if errBody != nil{
-		return nil, errBody
+		return "", errBody
 	}
 	var msg map[string]interface{}
 	err = json.Unmarshal(body, &msg)
 
-	if lucene, ok := msg[key].(map[string]interface{}) ; ok{
-		version = lucene["solr-spec-version"]
-		return
+	if lucene, ok := msg["lucene"].(map[string]interface{}) ; ok{
+		if version, ok = lucene["solr-spec-version"].(string); ok{
+			return
+		}
 	}
 
 	defer resp.Body.Close()
 
+	version = "未知"
 
 	return  //解析正确，但是没有想要的json key
 }

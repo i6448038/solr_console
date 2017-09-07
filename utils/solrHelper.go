@@ -3,6 +3,7 @@ package utils
 import (
 	"github.com/rtt/Go-Solr"
 	"github.com/fatih/color"
+	"fmt"
 )
 
 const (
@@ -37,6 +38,7 @@ func writeSolrDate(json string, flag int) *solr.UpdateResponse{
 	case CREATE:
 		var list []interface{}
 		list = append(list, document)
+		fmt.Println(list)
 		doc := map[string]interface{}{
 			"add":list,
 		}
