@@ -1,7 +1,6 @@
 package main
 
 import (
-	//"os"
 	"github.com/urfave/cli"
 	"fmt"
 	"net/http"
@@ -31,7 +30,7 @@ func main() {
 	app.Run(args)
 	for true {
 		str := ""
-		fmt.Printf("%s", flag)
+		fmt.Printf("%s", FLAG)
 		fmt.Scanf("%s", &str)
 		if str == "exit" {
 			break
@@ -43,7 +42,7 @@ func main() {
 
 }
 
-const flag = "golang>"
+const FLAG = "golang>"
 
 func initActions(){
 	app.Action = func(c * cli.Context) error {
