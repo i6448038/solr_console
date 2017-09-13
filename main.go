@@ -3,12 +3,10 @@ package main
 import (
 	"github.com/urfave/cli"
 	"fmt"
-	"net/http"
-	"io/ioutil"
-	"encoding/json"
 	"github.com/fatih/color"
 	"solr_console/utils"
 	"os"
+	"solr_console/connection"
 )
 
 var app *cli.App
@@ -18,51 +16,34 @@ func init(){
 	app = cli.NewApp()
 	app.Name = "solr_console"
 	app.Usage = "This is a solr console management tool"
-	//initActions()
 	initFlags()
 	initCommands()
 }
 
-
+var hint = color.New(color.FgBlue)
 
 func main() {
-	args := os.Args
-	app.Run(args)
-	for true {
-		str := ""
-		fmt.Printf("%s", FLAG)
-		fmt.Scanf("%s", &str)
-		if str == "exit" {
-			break
-		}else {
-			args = append(args, str)
-			app.Run(args)
+	isConnected := connection.Connection()
+	if isConnected{
+		args := os.Args
+		for true {
+			str := ""
+			fmt.Printf("%s", FLAG)
+			fmt.Scanf("%s", &str)
+			if str == "exit" {
+				break
+			}else {
+				args = append(args, str)
+				app.Run(args)
+			}
 		}
+	}else{
+		color.Red("链接错误！请重新试！")
 	}
 
 }
 
 const FLAG = "golang>"
-
-func initActions(){
-	app.Action = func(c * cli.Context) error {
-		color.Yellow("welcome to the solr management platform!")
-
-		version, err := getSolrVersion()
-
-		if err != nil {
-			color.Red("出现了错误！" + err.Error())
-			return err
-		}
-
-		color.Yellow("the version is:" + version)
-
-		color.Yellow("if you need any help，please type --help")
-
-
-		return nil
-	}
-}
 
 //初始化
 func initCommands(){
@@ -135,32 +116,4 @@ func initFlags(){
 			EnvVar: "LEGACY_COMPAT_LANG,APP_LANG,LANG",
 		},
 	}
-}
-
-
-func getSolrVersion()(version string, err error) {
-	host := "localhost"
-	port := "8983"
-	resp, err := http.Get("http://"+host +":"+ port + "/solr/admin/info/system?wt=json")
-	if err != nil{
-		fmt.Println("Please press the right address！")
-	}
-	body, errBody := ioutil.ReadAll(resp.Body)
-	if errBody != nil{
-		return "", errBody
-	}
-	var msg map[string]interface{}
-	err = json.Unmarshal(body, &msg)
-
-	if lucene, ok := msg["lucene"].(map[string]interface{}) ; ok{
-		if version, ok = lucene["solr-spec-version"].(string); ok{
-			return
-		}
-	}
-
-	defer resp.Body.Close()
-
-	version = "未知"
-
-	return  //解析正确，但是没有想要的json key
 }
