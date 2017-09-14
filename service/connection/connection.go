@@ -6,13 +6,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"encoding/json"
-	"os/exec"
 )
 
 func getSolrVersion(host, port string)(version string, err error) {
 	resp, err := http.Get("http://"+host +":"+ port + "/solr/admin/info/system?wt=json")
 	if err != nil{
-		fmt.Println("Please press the right address！")
+		return "", err
 	}
 	body, errBody := ioutil.ReadAll(resp.Body)
 	if errBody != nil{
@@ -48,11 +47,8 @@ func Connection() bool{
 
 	version, err := getSolrVersion(host, port)
 	if err != nil {
-		color.Red("出现了错误！" + err.Error())
 		return false
 	}
-	cmd := exec.Command("clear")
-	cmd.Run()
 	color.Blue("connect!")
 	color.Blue("welcome! the version is:" + version)
 	color.Blue("")

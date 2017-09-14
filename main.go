@@ -2,11 +2,12 @@ package main
 
 import (
 	"github.com/urfave/cli"
-	"fmt"
 	"github.com/fatih/color"
-	"solr_console/utils"
 	"os"
-	"solr_console/connection"
+	"solr_console/service/solr"
+	"bufio"
+	"strings"
+	"solr_console/service/connection"
 )
 
 var app *cli.App
@@ -21,20 +22,27 @@ func init(){
 }
 
 var hint = color.New(color.FgBlue)
+var console = color.New(color.FgWhite, color.BgGreen)
 
 func main() {
 	isConnected := connection.Connection()
 	if isConnected{
 		args := os.Args
 		for true {
-			str := ""
-			fmt.Printf("%s", FLAG)
-			fmt.Scanf("%s", &str)
-			if str == "exit" {
+			inputArgs := make([]string, 3)
+			console.Printf("%s", FLAG)
+			inputReader := bufio.NewReader(os.Stdin)
+			str, _ := inputReader.ReadString('\n')
+			inputArgs = strings.Split(str, " ")
+			if strings.TrimSpace(inputArgs[0]) == "exit" {
 				break
 			}else {
-				args = append(args, str)
+				for _, v := range inputArgs{
+					v = strings.TrimSpace(v)
+					args = append(args, v)
+				}
 				app.Run(args)
+				args = []string{}
 			}
 		}
 	}else{
@@ -56,7 +64,7 @@ func initCommands(){
 			ArgsUsage: `solr的格式为json字符串或者字符串数组（例如: {"id": 22, "title": "abc"}
 			或者：[{"id": 22, "title": "abc"}, {"id": 23, "title": "def"}, {"id": 24, "title": "def"}]）` ,
 			Action: func (c *cli.Context)error {
-				resp := utils.Create(c.Args().First())
+				resp := solr.Create(c.Args().First())
 				if(resp != nil){
 					color.Blue(resp.String())
 				}
@@ -72,7 +80,7 @@ func initCommands(){
 			或者：[{"id": 22, "title": "abc"}, {"id": 23, "title": "def"}, {"id": 24, "title": "def"}]）` ,
 			Action: func (c *cli.Context)error {
 				color.Yellow(c.Args().First())
-				resp := utils.Update(c.Args().First())
+				resp := solr.Update(c.Args().First())
 				if(resp != nil){
 					color.Blue(resp.String())
 				}
@@ -86,7 +94,7 @@ func initCommands(){
 			Description: "the d of the `CURD`,delete documents",
 			Action: func (c *cli.Context)error {
 				color.Red(c.Args().First())
-				resp := utils.Delete(c.Args().First())
+				resp := solr.Delete(c.Args().First())
 				if(resp != nil){
 					color.Blue(resp.String())
 				}

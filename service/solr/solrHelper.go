@@ -1,9 +1,10 @@
-package utils
+package solr
 
 import (
 	"github.com/rtt/Go-Solr"
 	"github.com/fatih/color"
 	"fmt"
+	"solr_console/utils"
 )
 
 const (
@@ -25,10 +26,10 @@ func init(){
 }
 
 func writeSolrDate(json string, flag int) *solr.UpdateResponse{
-	document, err := Decode(json)
+	document, err := utils.Decode(json)
 
 	if err != nil{
-		color.Red("请输入合法的json字符串!," + err.Error())
+		color.Red("请输入合法的json字符串!", err.Error())
 		return nil
 	}
 
@@ -87,6 +88,7 @@ func writeSolrDate(json string, flag int) *solr.UpdateResponse{
 
 
 func Create(json string) *solr.UpdateResponse{
+	fmt.Println(json)
 	return writeSolrDate(json, CREATE)
 }
 
