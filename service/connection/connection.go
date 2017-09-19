@@ -1,11 +1,11 @@
 package connection
 
 import (
-	"github.com/fatih/color"
 	"net/http"
 	"fmt"
 	"io/ioutil"
 	"encoding/json"
+	"solr_console/service/printer"
 )
 
 func getSolrVersion(host, port string)(version string, err error) {
@@ -36,23 +36,40 @@ func getSolrVersion(host, port string)(version string, err error) {
 
 //连接solr
 func Connection() bool{
-	var host string
-	var port string
-	hint := color.New(color.FgBlue)
-	color.Yellow("please press host and port! \n")
-	hint.Print("host:")
-	fmt.Scanf("%s", &host)
-	hint.Print("port:")
-	fmt.Scanf("%s", &port)
+	var version string
+	var err error
 
-	version, err := getSolrVersion(host, port)
-	if err != nil {
-		return false
+	host, port := checkToken()
+
+	if host != "" && port != ""{
+		version, err = getSolrVersion(host, port)
+		if err != nil {
+			return false
+		}
+	}else {
+		printer.InfoPrinter.Println("please press host and port!")
+		printer.InfoPrinter.Print("host:")
+		fmt.Scanf("%s", &host)
+		printer.InfoPrinter.Print("port:")
+		fmt.Scanf("%s", &port)
+		version, err = getSolrVersion(host, port)
+		if err != nil {
+			return false
+		}
+
+		err = createToken(host, port)
+		if err != nil{
+			return false
+		}
 	}
-	color.Blue("connect!")
-	color.Blue("welcome! the version is:" + version)
-	color.Blue("")
-	color.Blue("")
-	color.Blue("")
+
+
+	printer.InfoPrinter.Println("connect!")
+	printer.InfoPrinter.Println("welcome! the version is:" + version)
+	printer.InfoPrinter.Println("\n\n\n")
 	return true
 }
+
+
+
+

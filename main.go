@@ -8,6 +8,7 @@ import (
 	"bufio"
 	"strings"
 	"solr_console/service/connection"
+	"solr_console/service/printer"
 )
 
 var app *cli.App
@@ -21,8 +22,6 @@ func init(){
 	initCommands()
 }
 
-var hint = color.New(color.FgBlue)
-var console = color.New(color.FgWhite, color.BgGreen)
 
 func main() {
 	isConnected := connection.Connection()
@@ -30,7 +29,7 @@ func main() {
 		args := os.Args
 		for true {
 			inputArgs := make([]string, 3)
-			console.Printf("%s", FLAG)
+			printer.Console.Printf("%s", FLAG)
 			inputReader := bufio.NewReader(os.Stdin)
 			str, _ := inputReader.ReadString('\n')
 			inputArgs = strings.Split(str, " ")
@@ -46,7 +45,7 @@ func main() {
 			}
 		}
 	}else{
-		color.Red("链接错误！请重新试！")
+		printer.ErrorPrinter.Println("链接错误！请重新试！")
 	}
 
 }
